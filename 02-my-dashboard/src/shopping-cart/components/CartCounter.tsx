@@ -1,21 +1,45 @@
-'use client'
+"use client";
 
-import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  addOne,
+  initCounterState,
+  subtractOne,
+} from "@/store/counter/CounterSlice";
+import { useEffect } from "react";
+// import { useEffect } from "react";
 
+interface props {
+  value?: number;
+}
 
-export const CartCounter = () => {
+export type CounterResponse = {
+  method: string;
+  count: number;
+};
 
-  const [count, setCount] = useState(0)
+const getApiCounter = async (): Promise<CounterResponse> => {
+  const data = await fetch("/api/counter")
+    .then((response) => response.json())
+    .then((data) => data);
+  return data;
+};
+
+export const CartCounter = ({ value = 0 }: props) => {
+  const count = useAppSelector((state) => state.counter.count);
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    getApiCounter().then((data) => dispatch(initCounterState(data.count)));
+  }, [dispatch]);
 
   const increaseCount = () => {
-    setCount(count + 1)
-  }
+    dispatch(addOne());
+  };
 
   const decreaseCount = () => {
-    if (count > 0) {
-      setCount(count - 1)
-    }
-  }
+    dispatch(subtractOne());
+  };
 
   return (
     <>
@@ -26,7 +50,6 @@ export const CartCounter = () => {
           className="flex items-center justify-center p-2 rounded-xl bg-gray-900 text-white hover:bg-gray-600 transition-all w-[100px] mr-2"
           onClick={increaseCount}
         >
-
           +1
         </button>
         <button
@@ -37,5 +60,5 @@ export const CartCounter = () => {
         </button>
       </div>
     </>
-  )
-}
+  );
+};
